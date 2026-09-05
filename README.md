@@ -13,19 +13,19 @@ Para que el bot sepa qué buscar, necesitas los IDs únicos de tus cursos actual
 
 ## ¿Cómo crear tu Bot y obtener el Token y Chat ID?
 Para que los mensajes lleguen a tu celular, necesitas crear un bot personal en Telegram. Es gratis y toma poco tiempo:
-   **Paso 1: Crear el Bot y obtener el Token**
+   ### Paso 1: Crear el Bot y obtener el Token
      1. Abre Telegram y busca al usuario **@BotFather** (el que tiene la palomita azul).
      2. Inicia el chat y envíale el comando `/newbot`.
      3. Te pedirá un nombre para tu bot (ej. *MisTareasEminus*) 
      4. Te pedirá un nombre de usuario que debe terminar en "bot" (ej. *mis_tareas_uv_bot*).
      5. Al terminar, el BotFather te dará un mensaje largo que contiene tu **Token HTTP API** (ej. `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`). Cópialo.
 
-   **Paso 2: Obtener tu Chat ID (A dónde se enviarán los mensajes)**
+   ### Paso 2: Obtener tu Chat ID (A dónde se enviarán los mensajes)
      1. En el buscador de Telegram, busca el bot llamado **@userinfobot**.
      2. Envíale el comando `/getid` (o inicia el bot).
      3. Te devolverá tu id (ej. `1667702151`). Ese es tu **Chat ID**.
 
-   **Paso 3: ¡Muy importante! Activar tu bot**
+   ### Paso 3: ¡Muy importante! Activar tu bot
    Antes de correr el código, debes ir al chat del bot que tú acabas de crear y enviarle un mensaje (como "Hola" o presionar "Iniciar"). Si no haces esto, Telegram bloqueará los mensajes por seguridad y el código marcará error.
 
 ## Uso Local
