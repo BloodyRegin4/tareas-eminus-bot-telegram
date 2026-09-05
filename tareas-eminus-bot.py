@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import json
 import os
 
@@ -147,36 +148,63 @@ def ejecutar_sincronizacion():
     procesar_y_notificar(todas)
 
 def procesar_y_notificar(tareas):
-    hoy = datetime.now().date()
+    # Obligamos al bot a usar la hora del centro de México
+    zona_horaria = ZoneInfo("America/Mexico_City")
+    ahora = datetime.now(zona_horaria)
+    
     pendientes = []
     
     for t in tareas:
         estado = t.get("estadoEntrega")
         if estado is None or estado == 0:
-            fecha_str = t["fechaTermino"].split("T")[0]
-            fecha_obj = datetime.strptime(fecha_str, "%Y-%m-%d").date()
-            if fecha_obj >= hoy:
+            # Extraemos la fecha y hora completa (ignorando milisegundos si los hay)
+            fecha_str = t["fechaTermino"][:19] 
+            fecha_obj = datetime.strptime(fecha_str, "%Y-%m-%dT%H:%M:%S")
+            # Le asignamos la zona horaria correcta
+            fecha_obj = fecha_obj.replace(tzinfo=zona_horaria)
+            
+            # Solo guardamos la tarea si la fecha de entrega es mayor al minuto actual
+            if fecha_obj > ahora:
                 pendientes.append((t, fecha_obj))
     
+    # Ordenar por las que caducan más pronto
     pendientes.sort(key=lambda x: x[1])
 
     if not pendientes:
         print("Sin tareas pendientes. No se envía mensaje.")
         return
 
-    mensaje = "📚 *Resumen de Tareas Eminus*\n\n"
+    mensaje = "*TAREAS PENDIENTES*\n\n"
     
     for t, fecha in pendientes:
-        if fecha == hoy:
+        # Calcular cuánto tiempo falta exactamente
+        diferencia = fecha - ahora
+        dias = diferencia.days
+        horas = diferencia.seconds // 3600
+        minutos = (diferencia.seconds % 3600) // 60
+        
+        # Formatear el texto de "Faltan..."
+        if dias > 0:
+            tiempo_txt = f"{dias}d {horas}h"
+        elif horas > 0:
+            tiempo_txt = f"{horas}h {minutos}m"
+        else:
+            tiempo_txt = f"{minutos} minutos ⚠️"
+
+        # Formatear si es hoy o después
+        if fecha.date() == ahora.date():
             icono = "‼️"
             fecha_txt = "HOY"
         else:
             icono = "⏰"
             fecha_txt = f"{fecha.day}/{fecha.month}"
             
+        hora_formateada = fecha.strftime("%I:%M %p").lower()
+            
         mensaje += f"{icono} *{t['materia_nombre']}*\n"
         mensaje += f"   _{t['titulo']}_\n"
-        mensaje += f"   Límite: {fecha_txt}\n\n"
+        mensaje += f"   Límite: {fecha_txt} a las {hora_formateada}\n"
+        mensaje += f"   ⏳ Faltan: {tiempo_txt}\n\n"
         
     enviar_telegram(mensaje)
 
