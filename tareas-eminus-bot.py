@@ -81,14 +81,21 @@ def login_con_robot():
         except: driver.find_element(By.XPATH, "//input[@type='submit']").click()
         
         wait.until(lambda d: "login" not in d.current_url)
-        print("Login exitoso, extrayendo token...")
+        print("Login exitoso, esperando a que Eminus genere el token...")
         
         import time
-        time.sleep(4)
+        token = None
         
-        token = driver.execute_script("return localStorage.getItem('accessToken');")
-        if not token: token = driver.execute_script("return localStorage.getItem('token');")
-        if not token: token = driver.execute_script("return sessionStorage.getItem('token');")
+        # El servidor buscará el token cada segundo, hasta por 15 segundos
+        for intento in range(15):
+            time.sleep(1)
+            token = driver.execute_script("return localStorage.getItem('accessToken');")
+            if not token: token = driver.execute_script("return localStorage.getItem('token');")
+            if not token: token = driver.execute_script("return sessionStorage.getItem('token');")
+            
+            if token:
+                print(f"Token encontrado en el intento {intento + 1}")
+                break
         
         driver.quit()
         return token
